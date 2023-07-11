@@ -3,11 +3,19 @@ package com.example.dbconnection;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EdgeEffect;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,8 +23,11 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -42,7 +53,19 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         list = (ListView) findViewById(R.id.listView);
         personList = new ArrayList<HashMap<String, String>>();
+        String urrl ="http://10.0.2.2/PHP_connection.php";
         getData("http://10.0.2.2/PHP_connection.php"); //수정 필요
+        Button joinbtn = (Button) findViewById(R.id.join);
+        EditText age = (EditText) findViewById(R.id.age);
+        EditText name = (EditText) findViewById(R.id.name);
+        EditText adress = (EditText) findViewById(R.id.adress);
+
+        joinbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                insertData(urrl,age.getText().toString(), name.getText().toString(),adress.getText().toString());
+            }
+        });
     }
 
 
@@ -77,6 +100,60 @@ public class MainActivity extends Activity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+    }
+
+    public void insertData(String urrl, String age, String name, String address){
+        class GetDataJSON extends AsyncTask<String, Void, String>{
+            ProgressDialog loading;
+
+            @Override
+            protected void onPreExecute(){
+                super.onPreExecute();
+                loading = ProgressDialog.show(MainActivity.this, "Please Wait", null, true, true);
+            }
+            @Override
+            protected void onPostExecute(String s) {
+                super.onPostExecute(s);
+                loading.dismiss();
+                //Log.d("Tag : ", s); // php에서 가져온 값을 최종 출력함
+                Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
+            }
+            @Override
+            protected String doInBackground(String... params) {
+                try{
+                    String ageText = (String) params[0];
+                    String nameText = (String) params[1];
+                    String addressText = (String) params[2];
+
+                    String data = URLEncoder.encode("age","UTF-8") + "=" + URLEncoder.encode(ageText,"UTF-8");
+                    data += "&" + URLEncoder.encode("name","UTF-8") + "=" + URLEncoder.encode(nameText, "UTF-8")
+                    +"&" + URLEncoder.encode("adress","UTF-8")+"="+URLEncoder.encode(addressText,"UTF-8");
+                    URL url = new URL(urrl);
+                    URLConnection conn = url.openConnection();
+                    conn.setDoOutput(true);
+                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(conn.getOutputStream());
+                    outputStreamWriter.write(data);
+                    outputStreamWriter.flush();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder sb = new StringBuilder();
+                    String line = null;
+                    // Read Server Response
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                        break;
+                    }
+                    Log.d("tag : ", sb.toString()); // php에서 결과값을 리턴
+                    return sb.toString();
+
+                }catch (Exception e){
+                    return new String("Exception: "+e.getMessage());
+                }
+            }
+
+        }
+        GetDataJSON tast = new GetDataJSON();
+        tast.execute(age,name,address);
 
     }
 
