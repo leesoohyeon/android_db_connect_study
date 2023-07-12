@@ -23,6 +23,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -53,7 +54,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         list = (ListView) findViewById(R.id.listView);
         personList = new ArrayList<HashMap<String, String>>();
-        String urrl ="http://10.0.2.2/PHP_connection.php";
+        String urrl ="http://10.0.2.2/PHP_insert.php";
         getData("http://10.0.2.2/PHP_connection.php"); //수정 필요
         Button joinbtn = (Button) findViewById(R.id.join);
         EditText age = (EditText) findViewById(R.id.age);
@@ -129,7 +130,22 @@ public class MainActivity extends Activity {
                     String data = URLEncoder.encode("age","UTF-8") + "=" + URLEncoder.encode(ageText,"UTF-8");
                     data += "&" + URLEncoder.encode("name","UTF-8") + "=" + URLEncoder.encode(nameText, "UTF-8")
                     +"&" + URLEncoder.encode("adress","UTF-8")+"="+URLEncoder.encode(addressText,"UTF-8");
+                    String data1 = "age="+ageText+"&"+"name="+nameText+"&"+"adress="+addressText;
                     URL url = new URL(urrl);
+                    System.out.println(url);
+                    System.out.println(data);
+//                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+//                    conn.setRequestProperty("Content-Type","application/x-www.-form-urlencoded");
+//                    conn.setRequestMethod("POST");
+//                    conn.setConnectTimeout(5000);
+//                    conn.setDoOutput(true);
+//                    conn.setDoInput(true);
+//                    OutputStream outputStream = conn.getOutputStream();
+//                    outputStream.write(data1.getBytes("UTF-8"));
+//                    outputStream.flush();
+//                    outputStream.close();
+//                    conn.disconnect();
+//                    return "1";
                     URLConnection conn = url.openConnection();
                     conn.setDoOutput(true);
                     OutputStreamWriter outputStreamWriter = new OutputStreamWriter(conn.getOutputStream());
